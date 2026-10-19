@@ -10,7 +10,6 @@
     <img src="https://img.shields.io/badge/LinkedIn-matheusamericano-0A66C2?style=flat-square&logo=linkedin&logoColor=white" alt="LinkedIn">
   </a>
   <img src="https://img.shields.io/badge/Based_in-Belo_Horizonte,_BR-1A3157?style=flat-square" alt="Location">
-  <img src="https://img.shields.io/badge/Open_to-international_consulting-3B82F6?style=flat-square" alt="Open to">
 </p>
 
 ---
