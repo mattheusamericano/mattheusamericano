@@ -37,37 +37,64 @@ technically, and teach the same material as a Microsoft Certified Trainer.
 ### How I think about platform work
 
 ```mermaid
-flowchart TB
-    subgraph GOV["Governance layer"]
-        POL["Policies &<br/>guardrails"]
-        ID["Identity &<br/>access"]
+flowchart LR
+    subgraph SRC["① Source of truth"]
+        direction TB
+        MOD["Module library<br/><i>versioned, semver</i>"]
+        STACK["Stacks<br/><i>one per environment</i>"]
+        POL["Policy as code<br/><i>guardrails</i>"]
+        MOD --> STACK
+        POL --> STACK
     end
 
-    subgraph IAC["Infrastructure as Code"]
-        MOD["Versioned<br/>module library"]
-        PIPE["CI pipelines<br/>plan · policy · apply"]
+    subgraph CI["② Delivery pipeline"]
+        direction TB
+        VAL["validate · tflint · tfsec"]
+        PLAN["plan"]
+        GATE{"policy<br/>gate"}
+        APPLY["apply"]
+        VAL --> PLAN --> GATE
+        GATE -->|pass| APPLY
+        GATE -->|fail| STOP["blocked<br/><i>before it reaches prod</i>"]
     end
 
-    subgraph PLAT["Platform layer"]
-        NET["Network<br/>topology"]
-        K8S["Kubernetes<br/>clusters"]
-        DATA["Governed<br/>data products"]
+    subgraph CLOUDS["③ Landing zones"]
+        direction TB
+        GCP["Google Cloud<br/><i>hub-and-spoke · GKE</i>"]
+        AZ["Microsoft Azure<br/><i>hub-and-spoke · AKS</i>"]
+        IBM["IBM Cloud<br/><i>hub-and-spoke · IKS</i>"]
     end
 
-    subgraph RUN["Workloads"]
+    subgraph CONS["④ Consumers"]
+        direction TB
         APP["Microservices"]
-        ANA["Analytics<br/>consumers"]
+        DATA["Governed data products<br/><i>BigQuery Analytics Hub</i>"]
+        OBS["Observability<br/>&amp; capacity planning"]
     end
 
-    POL --> PIPE
-    ID --> PIPE
-    MOD --> PIPE
-    PIPE --> NET
-    PIPE --> K8S
-    PIPE --> DATA
-    NET --> APP
-    K8S --> APP
-    DATA --> ANA
+    STACK --> VAL
+    APPLY --> GCP
+    APPLY --> AZ
+    APPLY --> IBM
+    GCP --> APP
+    AZ --> APP
+    IBM --> APP
+    GCP --> DATA
+    APP --> OBS
+    DATA --> OBS
+    OBS -.->|feeds sizing<br/>back into modules| MOD
+
+    classDef src fill:#EEF2FF,stroke:#4F46E5,stroke-width:1px,color:#1E1B4B
+    classDef ci fill:#ECFDF5,stroke:#059669,stroke-width:1px,color:#064E3B
+    classDef cloud fill:#EFF6FF,stroke:#2563EB,stroke-width:1px,color:#0C2B5E
+    classDef cons fill:#FFF7ED,stroke:#EA580C,stroke-width:1px,color:#431407
+    classDef blocked fill:#FEF2F2,stroke:#DC2626,stroke-width:1px,color:#450A0A
+
+    class MOD,STACK,POL src
+    class VAL,PLAN,GATE,APPLY ci
+    class GCP,AZ,IBM cloud
+    class APP,DATA,OBS cons
+    class STOP blocked
 ```
 
 Reusable modules are the unit of governance: if the baseline is correct in the
